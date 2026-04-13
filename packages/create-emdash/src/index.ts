@@ -52,6 +52,11 @@ const NODE_TEMPLATES = {
 		description: "A general-purpose starter with posts and pages",
 		dir: "starter",
 	},
+	"starter-vercel": {
+		name: "Starter (Vercel)",
+		description: "Vercel-first starter with SQLite locally and Turso/libSQL in production",
+		dir: "starter-vercel",
+	},
 	marketing: {
 		name: "Marketing",
 		description: "A marketing site with landing pages and CTAs",
@@ -108,11 +113,11 @@ function selectOptions<K extends string>(
 }
 
 async function selectTemplate(platform: Platform): Promise<TemplateConfig> {
-	if (platform === "node") {
+	if (platform === "node" || platform === "vercel") {
 		const key = await p.select<NodeTemplate>({
 			message: "Which template?",
 			options: selectOptions(NODE_TEMPLATES),
-			initialValue: "blog",
+			initialValue: platform === "vercel" ? "starter-vercel" : "blog",
 		});
 		if (p.isCancel(key)) {
 			p.cancel("Operation cancelled.");

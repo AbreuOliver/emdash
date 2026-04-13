@@ -1,5 +1,26 @@
 # @emdash-cms/admin
 
+## 0.4.0
+
+### Minor Changes
+
+- [#516](https://github.com/emdash-cms/emdash/pull/516) [`20b03b4`](https://github.com/emdash-cms/emdash/commit/20b03b480156a5c901298a1ab9c968c800179215) Thanks [@erral](https://github.com/erral)! - Adds Basque (eu) translation
+
+### Patch Changes
+
+- [#502](https://github.com/emdash-cms/emdash/pull/502) [`af0647c`](https://github.com/emdash-cms/emdash/commit/af0647c7352922ad63077613771150d8178263ed) Thanks [@pagelab](https://github.com/pagelab)! - Adds Portuguese (Brazil) locale with full pt-BR translations following the WordPress pt-BR glossary standard.
+
+- [#521](https://github.com/emdash-cms/emdash/pull/521) [`b89e7f3`](https://github.com/emdash-cms/emdash/commit/b89e7f3811488ebe8fbe28068baa18f7f25844ad) Thanks [@ascorbic](https://github.com/ascorbic)! - Wraps all user-visible strings in the admin shell and core content screens with Lingui macros so they are translatable. Covers: Sidebar (nav labels, group headings), Header (View Site, Log out, Settings), ThemeToggle, Dashboard (headings, empty states, status indicators), ContentList (table headers, actions, dialogs, status badges), SaveButton, and ContentEditor (publish panel, schedule controls, byline editor, author selector, all dialogs). Runs `locale:extract` to add 116 new message IDs to all catalog files.
+
+- [#528](https://github.com/emdash-cms/emdash/pull/528) [`ba0a5af`](https://github.com/emdash-cms/emdash/commit/ba0a5afccf110465b72916e23db4ff975d81bc2e) Thanks [@ascorbic](https://github.com/ascorbic)! - Wraps all remaining admin UI components with Lingui macros, completing full i18n coverage of the admin interface. Catalog grows from 296 to 1,216 message IDs. Covers media library, menus, sections, redirects, taxonomies, content types, field editor, plugins, marketplace, SEO panels, setup wizard, auth flows, and all settings pages.
+
+- [#504](https://github.com/emdash-cms/emdash/pull/504) [`e2f96aa`](https://github.com/emdash-cms/emdash/commit/e2f96aa74bd936832a3a4d0636e81f948adb51c7) Thanks [@ascorbic](https://github.com/ascorbic)! - Fixes client-side locale switching and replaces toggle buttons with a Select dropdown.
+
+- [#471](https://github.com/emdash-cms/emdash/pull/471) [`4645103`](https://github.com/emdash-cms/emdash/commit/4645103f06ae9481b07dba14af07ac0ff57e32cf) Thanks [@ayfl269](https://github.com/ayfl269)! - Adds Chinese (Simplified) translation for the admin UI, including login page, settings page, and locale switching.
+
+- Updated dependencies []:
+  - @emdash-cms/blocks@0.4.0
+
 ## 0.3.0
 
 ### Patch Changes

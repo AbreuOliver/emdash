@@ -118,6 +118,8 @@ export function PluginManager({ manifest }: PluginManagerProps) {
 	}, [updates]);
 
 	const hasMarketplacePlugins = plugins?.some((p) => p.source === "marketplace");
+	const hasConfiguredPlugins = (plugins?.length ?? 0) > 0;
+	const isOpinionatedNoPluginMode = !hasMarketplace && !hasConfiguredPlugins;
 
 	if (isLoading) {
 		return (
@@ -167,7 +169,9 @@ export function PluginManager({ manifest }: PluginManagerProps) {
 			</div>
 
 			<p className="text-kumo-subtle">
-				{t`Manage installed plugins. Enable or disable plugins to control their functionality.`}
+				{isOpinionatedNoPluginMode
+					? t`This site is running in a no-plugin mode. Built-in CMS features are the default path for quick-launch client sites.`
+					: t`Manage installed plugins. Enable or disable plugins to control their functionality.`}
 			</p>
 
 			<div className="grid gap-4">
@@ -187,9 +191,13 @@ export function PluginManager({ manifest }: PluginManagerProps) {
 			{plugins?.length === 0 && (
 				<div className="rounded-lg border bg-kumo-base p-8 text-center">
 					<PuzzlePiece className="mx-auto h-12 w-12 text-kumo-subtle" />
-					<h3 className="mt-4 text-lg font-medium">{t`No plugins configured`}</h3>
+					<h3 className="mt-4 text-lg font-medium">
+						{isOpinionatedNoPluginMode ? t`No plugins, by design` : t`No plugins configured`}
+					</h3>
 					<p className="mt-2 text-sm text-kumo-subtle">
-						{hasMarketplace ? (
+						{isOpinionatedNoPluginMode ? (
+							t`This fork is optimized for built-in features and simpler operations. Add trusted plugins later only if you truly need them.`
+						) : hasMarketplace ? (
 							<>
 								{t`Browse the`}{" "}
 								<Link to="/plugins/marketplace" className="text-kumo-brand hover:underline">

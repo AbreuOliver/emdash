@@ -201,11 +201,21 @@ export function SidebarNav({ manifest }: SidebarNavProps) {
 		{ to: "/bylines", label: t`Bylines`, icon: FileText, minRole: ROLE_EDITOR },
 	];
 
+	const hasPluginEntries = Object.keys(manifest.plugins).length > 0;
+
 	const adminItems: NavItem[] = [
 		{ to: "/content-types", label: t`Content Types`, icon: Database, minRole: ROLE_ADMIN },
 		{ to: "/users", label: t`Users`, icon: Users, minRole: ROLE_ADMIN },
-		{ to: "/plugins-manager", label: t`Plugins`, icon: PuzzlePiece, minRole: ROLE_ADMIN },
 	];
+
+	if (hasPluginEntries || manifest.marketplace) {
+		adminItems.push({
+			to: "/plugins-manager",
+			label: t`Plugins`,
+			icon: PuzzlePiece,
+			minRole: ROLE_ADMIN,
+		});
+	}
 
 	if (manifest.marketplace) {
 		adminItems.push(

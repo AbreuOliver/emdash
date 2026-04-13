@@ -32,7 +32,7 @@ function detectPackageManager(): PackageManager {
 	return "npm";
 }
 
-type Platform = "node" | "cloudflare";
+type Platform = "vercel" | "node" | "cloudflare";
 
 interface TemplateConfig {
 	name: string;
@@ -174,17 +174,22 @@ async function main() {
 		message: "Where will you deploy?",
 		options: [
 			{
-				value: "cloudflare",
-				label: "Cloudflare Workers",
-				hint: "D1 + R2",
+				value: "vercel",
+				label: "Vercel",
+				hint: "Recommended for quick-launch sites, SQLite locally and Turso in production",
 			},
 			{
 				value: "node",
 				label: "Node.js",
 				hint: "SQLite + local file storage",
 			},
+			{
+				value: "cloudflare",
+				label: "Cloudflare Workers",
+				hint: "D1 + R2",
+			},
 		],
-		initialValue: "cloudflare",
+		initialValue: "vercel",
 	});
 
 	if (p.isCancel(platform)) {
@@ -193,7 +198,7 @@ async function main() {
 	}
 
 	// Step 2: pick template
-	const templateConfig = await selectTemplate(platform);
+	const templateConfig = await selectTemplate(platform === "vercel" ? "node" : platform);
 
 	// Step 3: pick package manager
 	const detectedPm = detectPackageManager();
@@ -270,6 +275,9 @@ async function main() {
 		const steps = [`cd ${projectName}`];
 		if (!shouldInstall) steps.push(installCmd);
 		steps.push(runCmd("dev"));
+		if (platform === "vercel") {
+			steps.push("See docs/VERCEL.md for Turso + Vercel production setup");
+		}
 
 		p.note(steps.join("\n"), "Next steps");
 

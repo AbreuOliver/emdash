@@ -1,21 +1,23 @@
 # EmDash
 
-A full-stack TypeScript CMS built on [Astro](https://astro.build/) and [Cloudflare](https://www.cloudflare.com/). EmDash takes the ideas that made WordPress dominant -- extensibility, admin UX, a plugin ecosystem -- and rebuilds them on serverless, type-safe foundations. Plugins run in sandboxed Worker isolates, solving the fundamental security problem with WordPress's plugin architecture.
+A full-stack TypeScript CMS built on [Astro](https://astro.build/) for fast public sites and a modern admin experience. This fork targets Vercel and Node first, with SQLite for local development, Turso/libSQL for production, and a deliberately opinionated no-plugin default for local-business sites.
 
 ## Get Started
-
-> [!IMPORTANT]
-> EmDash depends on Dynamic Workers to run secure sandboxed plugins. Dynamic Workers are currently only available on paid accounts. [Upgrade your account](https://www.cloudflare.com/plans/developer-platform/) (starting at $5/mo) or comment out the `worker_loaders` block of your `wrangler.jsonc` configuration file to disable plugins.
 
 ```bash
 npm create emdash@latest
 ```
 
-Or deploy directly to your Cloudflare account:
+Recommended quick-launch path for this fork:
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/emdash-cms/templates/tree/main/blog-cloudflare)
+- deploy target: Vercel
+- local database: SQLite
+- production database: Turso/libSQL
+- plugins: none by default
 
-EmDash runs on Cloudflare (D1 + R2 + Workers) or any Node.js server with SQLite. No PHP, no separate hosting tier -- just deploy your Astro site.
+See `docs/VERCEL.md` for the production deployment path.
+
+Cloudflare support still exists in the upstream architecture, but it is no longer the primary path for this fork.
 
 ## Templates
 
@@ -75,7 +77,7 @@ A visual portfolio for showcasing creative work.
 
 **WordPress was built for a different era.** Running WordPress today means managing PHP alongside JavaScript, layering caches to get acceptable performance, and knowing that [96% of WordPress security vulnerabilities come from plugins](https://patchstack.com/whitepaper/state-of-wordpress-security-in-2024/). EmDash is what WordPress would look like if you started from scratch with today's tools.
 
-**Sandboxed plugins.** WordPress plugins have full access to the database, filesystem, and user data. A single vulnerable plugin can compromise the entire site. EmDash plugins run in isolated [Worker sandboxes](https://developers.cloudflare.com/workers/runtime-apis/bindings/worker-loader/) via Dynamic Worker Loaders, each with a declared capability manifest. A plugin that requests `read:content` and `email:send` can do exactly that and nothing else.
+**Opinionated, built-in core.** Instead of depending on a wide plugin marketplace, this fork is aimed at built-in CMS features for local-business sites: editing pages, posts, media, menus, and settings with as little operational complexity as possible.
 
 ```typescript
 export default () =>
@@ -98,7 +100,7 @@ export default () =>
 
 **Built for agents.** EmDash ships with agent skills for building plugins and themes, a CLI that lets agents manage content and schema programmatically, and a built-in [MCP server](https://modelcontextprotocol.io/) so AI tools like Claude and ChatGPT can interact with your site directly.
 
-**Runs anywhere.** EmDash uses portable abstractions at every layer -- Kysely for SQL, S3 API for storage -- that work with SQLite, D1, Turso, PostgreSQL, R2, AWS S3, or local files. It runs best on Cloudflare, but it's not locked to it.
+**Runs where you need it.** EmDash uses portable abstractions at every layer -- Kysely for SQL, S3 API for storage -- that work with SQLite, Turso, PostgreSQL, AWS S3, local files, and Cloudflare services. This fork treats Vercel and plain Node as the default deployment path.
 
 ## How It Works
 
@@ -139,7 +141,7 @@ const { entries: posts } = await getEmDashCollection("posts");
 
 **Auth** -- Passkey-first (WebAuthn) with OAuth and magic link fallbacks. Role-based access control: Administrator, Editor, Author, Contributor.
 
-**Plugins** -- `definePlugin()` API with lifecycle hooks, KV storage, settings, admin pages, dashboard widgets, custom block types, and API routes. Sandboxed execution on Cloudflare via Dynamic Worker Loaders.
+**Plugins** -- Plugin APIs still exist in the codebase, but this fork does not treat plugins or the marketplace as the primary product story. The default recommendation is a no-plugin deployment with built-in features and reviewed first-party code.
 
 **Agents** -- Skill files for AI-assisted plugin and theme development. CLI for programmatic site management. Built-in MCP server for direct AI tool integration.
 
@@ -175,6 +177,8 @@ pnpm build
 ```
 
 Run the demo (Node.js + SQLite, no Cloudflare account needed):
+
+For Vercel production, keep SQLite locally and switch to Turso/libSQL in production. See `docs/VERCEL.md`.
 
 ```bash
 pnpm --filter emdash-demo seed

@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { renderMarkdown, formatDate } from '../lib/astro/utils';
+import { getSettings, getPosts, getBanners, getHours } from '../lib/astro/api';
+
+const settings = await getSettings() as Record<string, string> | null;
+const posts = await getPosts() as Array<Record<string, string>>;
+const banners = await getBanners();
+const hours = await getHours();
+
+const recentPosts = posts.slice(0, 3);
+const activeBanner = (banners as Array<{ text: string; isActive?: boolean }>).find((b) => b.isActive);
+
+const hoursList = hours as Array<{ label: string; opens: string; closes: string; closed: boolean }>;
+const s = settings ?? {};
+---
+
+<BaseLayout title={s?.title || 'Home'} description={s?.tagline || ''}>
+  <div class="container">
+    <section class="section">
+      <h1 class="section-title">{s?.tagline || 'Welcome'}</h1>
+      <p class="prose">
+        {s?.address}
+        {s?.phone && <> | <a href={`tel:${s.phone}`}>{s.phone}</a></>}
+        {s?.email && <> | <a href={`mailto:${s.email}`}>{s.email}</a></>}
+      </p>
+    </section>
+
+    {hoursList.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">Hours</h2>
+        <div class="hours-grid">
+          {hoursList.map((h) => (
+            <div class={`hours-row${h.closed ? ' closed' : ''}`}>
+              <span>{h.label}</span>
+              <span>{h.closed ? 'Closed' : `${h.opens} – ${h.closes}`}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {recentPosts.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">Recent Posts</h2>
+        <div class="card-grid">
+          {recentPosts.map((post) => (
+            <a href={`/posts/${post.slug}`} class="card">
+              <h3>{post.title}</h3>
+              <p>{post.excerpt}</p>
+              {post.publishedAt && <p class="date">{formatDate(post.publishedAt)}</p>}
+            </a>
+          ))}
+        </div>
+        <p style="margin-top: 1rem;"><a href="/posts">View all posts &rarr;</a></p>
+      </section>
+    )}
+  </div>
+</BaseLayout>

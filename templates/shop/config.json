@@ -1,0 +1,6 @@
+{
+  "name": "shop",
+  "displayName": "Retail Shop",
+  "description": "Great for retail stores and boutiques with featured products section.",
+  "sections": ["hero", "about", "featured-products", "hours", "recent-posts", "contact", "footer"]
+}

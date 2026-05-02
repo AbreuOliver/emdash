@@ -1,0 +1,6 @@
+{
+  "name": "service-provider",
+  "displayName": "Service Provider",
+  "description": "Ideal for plumbers, electricians, contractors, and other service businesses.",
+  "sections": ["hero", "services", "about", "testimonials", "recent-posts", "contact", "footer"]
+}

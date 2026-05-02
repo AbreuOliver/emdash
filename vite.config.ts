@@ -4,9 +4,4 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [tailwindcss(), sveltekit()],
-  server: {
-    watch: {
-      ignored: ['**/data/cms.json']
-    }
-  }
 });

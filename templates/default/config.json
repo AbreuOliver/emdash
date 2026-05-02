@@ -1,0 +1,6 @@
+{
+  "name": "default",
+  "displayName": "Default",
+  "description": "A clean, versatile template for any local business.",
+  "sections": ["hero", "about", "hours", "recent-posts", "contact", "footer"]
+}

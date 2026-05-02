@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { renderMarkdown, formatDate } from '../../lib/astro/utils';
+import { getPosts } from '../../lib/astro/api';
+
+export async function getStaticPaths() {
+  const posts = (await getPosts()) as Array<Record<string, string>>;
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props as { post: Record<string, string> };
+const content = renderMarkdown(post.body || '');
+---
+
+<BaseLayout title={post.seoTitle || post.title} description={post.seoDescription || post.excerpt} noIndex={post.seoNoIndex === '1' || post.seoNoIndex === true}>
+  <article class="container prose">
+    <h1>{post.title}</h1>
+    {post.publishedAt && <p style="color: var(--color-muted); font-size: 0.875rem; margin-bottom: 1.5rem;">{formatDate(post.publishedAt)}</p>}
+    <div set:html={content} />
+  </article>
+</BaseLayout>

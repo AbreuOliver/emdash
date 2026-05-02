@@ -1,0 +1,10 @@
+CREATE INDEX idx_sites_api_key ON sites(api_key);
+CREATE INDEX idx_site_settings_site_status ON site_settings(site_id, status);
+CREATE INDEX idx_business_hours_site_status ON business_hours(site_id, status);
+CREATE INDEX idx_posts_site_status ON posts(site_id, status);
+CREATE INDEX idx_posts_site_slug ON posts(site_id, slug);
+CREATE INDEX idx_pages_site_status ON pages(site_id, status);
+CREATE INDEX idx_pages_site_slug ON pages(site_id, slug);
+CREATE INDEX idx_events_site_status ON events(site_id, status);
+CREATE INDEX idx_banners_site_status ON banners(site_id, status);
+CREATE INDEX idx_images_site ON images(site_id);

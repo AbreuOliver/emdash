@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { renderMarkdown, formatDateTime } from '../../lib/astro/utils';
+import { getEvents } from '../../lib/astro/api';
+
+export async function getStaticPaths() {
+  const events = (await getEvents()) as Array<Record<string, string>>;
+  return events.map((event) => ({
+    params: { id: event.id },
+    props: { event },
+  }));
+}
+
+const { event } = Astro.props as { event: Record<string, string> };
+const content = renderMarkdown(event.description || '');
+const siteUrl = Astro.site?.toString() || 'http://localhost:4321';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: event.title,
+  description: event.description,
+  startDate: event.startDateTime,
+  endDate: event.endDateTime || undefined,
+  location: event.location ? { '@type': 'Place', name: event.location } : undefined,
+};
+---
+
+<BaseLayout title={event.seoTitle || event.title} description={event.seoDescription || ''} noIndex={event.seoNoIndex === '1' || event.seoNoIndex === true}>
+  <article class="container prose">
+    <h1>{event.title}</h1>
+    {event.startDateTime && (
+      <p style="color: var(--color-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">
+        {formatDateTime(event.startDateTime)}
+        {event.endDateTime && ` — ${formatDateTime(event.endDateTime)}`}
+      </p>
+    )}
+    {event.location && <p style="margin-bottom: 1.5rem;">📍 {event.location}</p>}
+    <div set:html={content} />
+  </article>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</BaseLayout>

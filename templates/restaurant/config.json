@@ -1,0 +1,6 @@
+{
+  "name": "restaurant",
+  "displayName": "Restaurant",
+  "description": "Perfect for restaurants, cafes, and bars. Features menu preview and hours prominently.",
+  "sections": ["hero", "about", "hours", "menu-preview", "recent-posts", "events-preview", "contact", "footer"]
+}

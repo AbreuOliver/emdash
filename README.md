@@ -1,6 +1,14 @@
-# Symballo Starter (SvelteKit)
+# EmDash — JAMstack Website Ops Tool
 
-This is the Svelte 5/SvelteKit local-business starter.
+A JAMstack website operations tool for small local businesses.
+
+## Architecture
+
+- **Admin UI** — SvelteKit client at `/admin` (draft/publish workflow, CRUD for all content types)
+- **API layer** — SvelteKit server routes under `/api/*` (authenticated via `X-Site-Key` header)
+- **Database** — Turso (edge SQLite) for persistent content storage
+- **Media** — ImageKit for uploads, CDN delivery, and automatic optimization
+- **Public site** — Astro static output, zero-JS default, SEO/OG tags
 
 ## Development
 
@@ -9,16 +17,18 @@ pnpm install
 pnpm dev
 ```
 
-## What to edit first
+## Project structure
 
-- `data/cms.json`: business identity, hours, posts, pages
-- `src/routes/+page.svelte`: landing page layout/content blocks
-- `src/styles.css`: visual styling
+- `src/routes/admin/` — SvelteKit admin pages (dashboard, settings, posts, pages, events, banners, media, templates)
+- `src/routes/api/` — REST API endpoints for all content operations
+- `src/lib/server/` — Turso database layer, ImageKit integration, auth middleware
+- `src/lib/admin/` — Browser-side API client and shared admin styles
+- `src/pages/` — Astro public site routes
+- `src/layouts/` — Astro public site layouts
+- `migrations/` — Turso SQL schema migrations
 
-## Routes
+## Key scripts
 
-- `/`: landing page
-- `/posts`: post list
-- `/posts/[slug]`: post detail
-- `/pages/[slug]`: page detail
-- `/admin`: built-in Svelte admin panel for editing site details, posts, and pages
+- `pnpm db:setup` — Run migrations and seed default site/content
+- `pnpm check` — TypeScript type check
+- `pnpm build` — Build admin (SvelteKit) then public site (Astro)

@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { renderMarkdown } from '../../lib/astro/utils';
+import { getPages } from '../../lib/astro/api';
+
+export async function getStaticPaths() {
+  const pages = (await getPages()) as Array<Record<string, string>>;
+  return pages.map((page) => ({
+    params: { slug: page.slug },
+    props: { page },
+  }));
+}
+
+const { page } = Astro.props as { page: Record<string, string> };
+const content = renderMarkdown(page.body || '');
+---
+
+<BaseLayout title={page.seoTitle || page.title} description={page.seoDescription || ''} noIndex={page.seoNoIndex === '1' || page.seoNoIndex === true}>
+  <article class="container prose">
+    <h1>{page.title}</h1>
+    <div set:html={content} />
+  </article>
+</BaseLayout>

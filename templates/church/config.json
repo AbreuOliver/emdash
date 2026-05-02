@@ -1,0 +1,6 @@
+{
+  "name": "church",
+  "displayName": "Church & Ministry",
+  "description": "Built for churches and faith organizations with service times and events.",
+  "sections": ["hero", "about", "service-times", "events-preview", "recent-posts", "contact", "footer"]
+}

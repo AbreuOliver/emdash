@@ -104,9 +104,8 @@
   }
 
   .admin-panel {
-    @apply rounded-lg border p-4;
+    @apply rounded-lg p-4;
     background: var(--admin-panel-bg);
-    border-color: var(--admin-panel-border);
   }
 
   .admin-pill {

@@ -1,0 +1,6 @@
+{
+  "name": "salon",
+  "displayName": "Salon & Spa",
+  "description": "Designed for salons, spas, and beauty services with team and services sections.",
+  "sections": ["hero", "services", "hours", "team", "recent-posts", "contact", "footer"]
+}

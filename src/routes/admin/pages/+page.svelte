@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Layout from '../+layout.svelte';
   import { api } from '$lib/admin/api-client';
   import '$lib/admin/admin.css';
 
@@ -36,11 +35,8 @@
   }
 </script>
 
-<Layout>
-  <svelte:fragment slot="title">
     Pages
     <a href="/admin/pages/new" class="btn btn-primary" style="margin-left:1rem;">New Page</a>
-  </svelte:fragment>
 
   {#if loading}
     <div class="card" style="text-align:center;padding:2rem;">Loading...</div>
@@ -69,4 +65,3 @@
       </table>
     </div>
   {/if}
-</Layout>

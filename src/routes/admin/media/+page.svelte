@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Layout from '../+layout.svelte';
   import { api } from '$lib/admin/api-client';
   import '$lib/admin/admin.css';
 
@@ -52,8 +51,6 @@
   }
 </script>
 
-<Layout>
-  <svelte:fragment slot="title">Media</svelte:fragment>
 
   <div class="card" style="margin-bottom:1rem;">
     <label class="upload-zone" class:uploading>
@@ -81,4 +78,3 @@
       {/each}
     </div>
   {/if}
-</Layout>

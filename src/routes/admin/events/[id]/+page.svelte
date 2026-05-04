@@ -95,8 +95,6 @@
   }
 </script>
 
-<Layout>
-  <svelte:fragment slot="title">{isNew ? 'New Event' : 'Edit Event'}</svelte:fragment>
 
   <div class="editor-layout">
     <div class="editor-main">
@@ -107,7 +105,7 @@
           {#if errors.title}<p class="error">{errors.title}</p>{/if}
         </div>
         <div class="form-group">
-          <label>Description (Markdown)</label>
+          <label for="md-desc">Description (Markdown)</label>
           <div class="md-toolbar">
             <button type="button" onclick={() => insertMd('**')} title="Bold"><b>B</b></button>
             <button type="button" onclick={() => insertMd('*')} title="Italic"><i>I</i></button>
@@ -153,4 +151,3 @@
       </button>
     </div>
   </div>
-</Layout>

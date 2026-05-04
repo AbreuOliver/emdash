@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Layout from '../+layout.svelte';
   import { api } from '$lib/admin/api-client';
   import '$lib/admin/admin.css';
 
@@ -39,11 +38,8 @@
   }
 </script>
 
-<Layout>
-  <svelte:fragment slot="title">
     Events
     <a href="/admin/events/new" class="btn btn-primary" style="margin-left:1rem;">New Event</a>
-  </svelte:fragment>
 
   <div class="card" style="margin-bottom:1rem;display:flex;gap:0.5rem;">
     <button class="btn {showUpcoming ? 'btn-primary' : ''}" onclick={() => { showUpcoming = true; loadEvents(); }}>Upcoming</button>
@@ -78,4 +74,3 @@
       </table>
     </div>
   {/if}
-</Layout>

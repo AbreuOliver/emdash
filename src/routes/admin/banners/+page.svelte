@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Layout from '../+layout.svelte';
   import { api } from '$lib/admin/api-client';
   import '$lib/admin/admin.css';
 
@@ -90,11 +89,8 @@
   }
 </script>
 
-<Layout>
-  <svelte:fragment slot="title">
     Banners
     <button class="btn btn-primary" style="margin-left:1rem;" onclick={() => startEdit()}>New Banner</button>
-  </svelte:fragment>
 
   {#if editing}
     <div class="card form" style="max-width:500px;">
@@ -162,4 +158,3 @@
       </div>
     {/if}
   {/if}
-</Layout>

@@ -1,11 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
-  import Layout from '../../+layout.svelte';
   import { api } from '$lib/admin/api-client';
   import '$lib/admin/admin.css';
 
-  let postId = $state('');
   let title = $state('');
   let slug = $state('');
   let excerpt = $state('');
@@ -28,7 +26,6 @@
     if (!isNew) {
       try {
         const post = await api.getPost(slugParam, 'draft') as Record<string, string>;
-        postId = post.id;
         title = post.title;
         slug = post.slug;
         excerpt = post.excerpt || '';
@@ -39,7 +36,7 @@
         seoKeywords = post.seoKeywords || '';
         seoNoIndex = post.seoNoIndex === '1' || post.seoNoIndex === 'true';
       } catch {
-        showToast('Post not found');
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: 'Post not found' }));
       }
     }
   });
@@ -64,13 +61,13 @@
       const data = { title, slug, excerpt, body, publishedAt: publishedAt || null, seoTitle, seoDescription, seoKeywords, seoNoIndex };
       if (isNew) {
         await api.createPost(data);
-        showToast('Post created');
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: 'Post created' }));
       } else {
         await api.updatePost(slug, data);
-        showToast('Post saved');
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: 'Post saved' }));
       }
     } catch (err) {
-      showToast(`Save failed: ${err instanceof Error ? err.message : 'unknown'}`);
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: `Save failed: ${err instanceof Error ? err.message : 'unknown'}` }));
     } finally {
       saving = false;
     }
@@ -90,81 +87,73 @@
       el.selectionStart = el.selectionEnd = start + replacement.length;
     });
   }
-
-  function showToast(msg: string) {
-    window.dispatchEvent(new CustomEvent('show-toast', { detail: msg }));
-  }
 </script>
 
-<Layout>
-  <svelte:fragment slot="title">{isNew ? 'New Post' : 'Edit Post'}</svelte:fragment>
-
-  <div class="editor-layout">
-    <div class="editor-main">
-      <div class="card form">
-        <div class="form-group">
-          <label for="title">Title *</label>
-          <input id="title" type="text" bind:value={title} oninput={generateSlug} />
-          {#if errors.title}<p class="error">{errors.title}</p>{/if}
-        </div>
-        <div class="form-group">
-          <label for="slug">Slug *</label>
-          <input id="slug" type="text" bind:value={slug} />
-          {#if errors.slug}<p class="error">{errors.slug}</p>{/if}
-        </div>
-        <div class="form-group">
-          <label for="excerpt">Excerpt</label>
-          <textarea id="excerpt" rows="2" bind:value={excerpt}></textarea>
-        </div>
-        <div class="form-group">
-          <label>Body (Markdown)</label>
-          <div class="md-toolbar">
-            <button type="button" onclick={() => insertMd('**')} title="Bold"><b>B</b></button>
-            <button type="button" onclick={() => insertMd('*')} title="Italic"><i>I</i></button>
-            <button type="button" onclick={() => insertMd('## ')} title="Heading">H2</button>
-            <button type="button" onclick={() => insertMd('[', ']()')} title="Link">Link</button>
-            <button type="button" onclick={() => insertMd('- ')} title="List">•</button>
-            <button type="button" onclick={() => insertMd('1. ')} title="Numbered List">1.</button>
-            <button type="button" onclick={() => insertMd('> ')} title="Quote">❝</button>
-          </div>
-          <textarea id="md-body" rows="16" bind:value={body} style="font-family:monospace;"></textarea>
-        </div>
+<div class="editor-layout">
+  <div class="editor-main">
+    <div class="card form">
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input id="title" type="text" bind:value={title} oninput={generateSlug} />
+        {#if errors.title}<p class="error">{errors.title}</p>{/if}
       </div>
-    </div>
-
-    <div class="editor-sidebar">
-      <div class="card">
-        <h3>Publishing</h3>
-        <div class="form-group">
-          <label for="publishedAt">Publish Date</label>
-          <input id="publishedAt" type="date" bind:value={publishedAt} />
-        </div>
-        <button class="btn btn-primary" onclick={save} disabled={saving} style="width:100%;">
-          {saving ? 'Saving...' : (isNew ? 'Create Post' : 'Save Post')}
-        </button>
+      <div class="form-group">
+        <label for="slug">Slug *</label>
+        <input id="slug" type="text" bind:value={slug} />
+        {#if errors.slug}<p class="error">{errors.slug}</p>{/if}
       </div>
-
-      <div class="card" style="margin-top:1rem;">
-        <h3>SEO</h3>
-        <div class="form-group">
-          <label for="seoTitle">SEO Title</label>
-          <input id="seoTitle" type="text" bind:value={seoTitle} />
+      <div class="form-group">
+        <label for="excerpt">Excerpt</label>
+        <textarea id="excerpt" rows="2" bind:value={excerpt}></textarea>
+      </div>
+      <div class="form-group">
+        <label for="md-body">Body (Markdown)</label>
+        <div class="md-toolbar">
+          <button type="button" onclick={() => insertMd('**')} title="Bold"><b>B</b></button>
+          <button type="button" onclick={() => insertMd('*')} title="Italic"><i>I</i></button>
+          <button type="button" onclick={() => insertMd('## ')} title="Heading">H2</button>
+          <button type="button" onclick={() => insertMd('[', ']()')} title="Link">Link</button>
+          <button type="button" onclick={() => insertMd('- ')} title="List">•</button>
+          <button type="button" onclick={() => insertMd('1. ')} title="Numbered List">1.</button>
+          <button type="button" onclick={() => insertMd('> ')} title="Quote">❝</button>
         </div>
-        <div class="form-group">
-          <label for="seoDescription">SEO Description</label>
-          <textarea id="seoDescription" rows="2" bind:value={seoDescription}></textarea>
-        </div>
-        <div class="form-group">
-          <label for="seoKeywords">Keywords</label>
-          <input id="seoKeywords" type="text" bind:value={seoKeywords} />
-        </div>
-        <div class="form-group">
-          <label class="checkbox-label">
-            <input type="checkbox" bind:checked={seoNoIndex} />
-            No index (hide from search engines)
-          </label>
-        </div>
+        <textarea id="md-body" rows="16" bind:value={body} style="font-family:monospace;"></textarea>
       </div>
     </div>
   </div>
-</Layout>
+
+  <div class="editor-sidebar">
+    <div class="card">
+      <h3>Publishing</h3>
+      <div class="form-group">
+        <label for="publishedAt">Publish Date</label>
+        <input id="publishedAt" type="date" bind:value={publishedAt} />
+      </div>
+      <button class="btn btn-primary" onclick={save} disabled={saving} style="width:100%;">
+        {saving ? 'Saving...' : (isNew ? 'Create Post' : 'Save Post')}
+      </button>
+    </div>
+
+    <div class="card" style="margin-top:1rem;">
+      <h3>SEO</h3>
+      <div class="form-group">
+        <label for="seoTitle">SEO Title</label>
+        <input id="seoTitle" type="text" bind:value={seoTitle} />
+      </div>
+      <div class="form-group">
+        <label for="seoDescription">SEO Description</label>
+        <textarea id="seoDescription" rows="2" bind:value={seoDescription}></textarea>
+      </div>
+      <div class="form-group">
+        <label for="seoKeywords">Keywords</label>
+        <input id="seoKeywords" type="text" bind:value={seoKeywords} />
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" bind:checked={seoNoIndex} />
+          No index (hide from search engines)
+        </label>
+      </div>
+    </div>
+  </div>
+</div>

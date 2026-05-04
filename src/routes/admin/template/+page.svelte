@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Layout from '../+layout.svelte';
   import { api } from '$lib/admin/api-client';
   import '$lib/admin/admin.css';
 
@@ -39,8 +38,6 @@
   }
 </script>
 
-<Layout>
-  <svelte:fragment slot="title">Template</svelte:fragment>
 
   {#if loading}
     <div class="card" style="text-align:center;padding:2rem;">Loading...</div>
@@ -61,4 +58,3 @@
       {/each}
     </div>
   {/if}
-</Layout>

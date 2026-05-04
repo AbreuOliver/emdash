@@ -1,35 +1,81 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { page } from '$app/state';
   import { api } from '$lib/admin/api-client';
+  import IconLayoutDashboard from '@tabler/icons-svelte/icons/layout-dashboard';
+  import IconArticle from '@tabler/icons-svelte/icons/article';
+  import IconRosetteDiscount from '@tabler/icons-svelte/icons/rosette-discount';
+  import IconClockHour4 from '@tabler/icons-svelte/icons/clock-hour-4';
+  import IconPhoto from '@tabler/icons-svelte/icons/photo';
+  import IconUserCircle from '@tabler/icons-svelte/icons/user-circle';
+  import IconFileText from '@tabler/icons-svelte/icons/file-text';
+  import IconPalette from '@tabler/icons-svelte/icons/palette';
+  import IconSeo from '@tabler/icons-svelte/icons/seo';
+  import IconHelpCircle from '@tabler/icons-svelte/icons/help-circle';
+  import IconHeadset from '@tabler/icons-svelte/icons/headset';
+  import IconExternalLink from '@tabler/icons-svelte/icons/external-link';
+  import IconMenu2 from '@tabler/icons-svelte/icons/menu-2';
   import '$lib/admin/admin.css';
+  let { children } = $props();
 
   let hasUnpublishedChanges = $state(false);
   let showPublishDialog = $state(false);
   let publishChanges = $state<string[]>([]);
   let publishLoading = $state(false);
   let publishing = $state(false);
-  let toast = $state('');
+  let sidebarCollapsed = $state(false);
 
   const navItems = [
-    { label: 'Dashboard', href: '/admin/dashboard', icon: '◉' },
-    { label: 'Settings', href: '/admin/settings', icon: '⚙' },
-    { label: 'Posts', href: '/admin/posts', icon: '✎' },
-    { label: 'Pages', href: '/admin/pages', icon: '☰' },
-    { label: 'Events', href: '/admin/events', icon: '◷' },
-    { label: 'Banners', href: '/admin/banners', icon: '▬' },
-    { label: 'Media', href: '/admin/media', icon: '▣' },
-    { label: 'Template', href: '/admin/template', icon: '▧' },
+    { id: 'dashboard', label: 'Dashboard', href: '/admin/dashboard', section: 'content', icon: IconLayoutDashboard },
+    { id: 'posts', label: 'Posts', href: '/admin/posts', section: 'content', icon: IconArticle },
+    { id: 'promotions', label: 'Promotions', href: '/admin/banners', section: 'content', icon: IconRosetteDiscount },
+    { id: 'hours', label: 'Hours', href: '/admin/settings', section: 'content', icon: IconClockHour4 },
+    { id: 'photos', label: 'Photos', href: '/admin/media', section: 'content', icon: IconPhoto },
+    { id: 'site-profile', label: 'Site Profile', href: '/admin/settings', section: 'settings', icon: IconUserCircle },
+    { id: 'pages', label: 'Pages', href: '/admin/pages', section: 'settings', icon: IconFileText },
+    { id: 'appearance', label: 'Appearance', href: '/admin/template', section: 'settings', icon: IconPalette },
+    { id: 'settings-seo', label: 'Settings & SEO', href: '/admin/settings', section: 'settings', icon: IconSeo }
+  ];
+  const topTabs = [
+    { label: 'Site Profile', href: '/admin/settings' },
+    { label: 'Pages', href: '/admin/pages' },
+    { label: 'Posts', href: '/admin/posts' },
+    { label: 'Promotions', href: '/admin/banners' },
+    { label: 'Appearance', href: '/admin/template' }
   ];
 
+  const activePath = $derived.by(() => {
+    const pathName = page.url.pathname;
+    if (pathName.startsWith('/admin/posts')) return '/admin/posts';
+    if (pathName.startsWith('/admin/pages')) return '/admin/pages';
+    if (pathName.startsWith('/admin/banners')) return '/admin/banners';
+    if (pathName.startsWith('/admin/template')) return '/admin/template';
+    if (pathName.startsWith('/admin/dashboard')) return '/admin/dashboard';
+    return '/admin/settings';
+  });
+  const pageTitle = $derived(topTabs.find((item) => item.href === activePath)?.label ?? 'Site Profile');
+  const activeSidebarId = $derived.by(() => {
+    if (activePath === '/admin/dashboard') return 'dashboard';
+    if (activePath === '/admin/posts') return 'posts';
+    if (activePath === '/admin/banners') return 'promotions';
+    if (activePath === '/admin/pages') return 'pages';
+    if (activePath === '/admin/template') return 'appearance';
+    return 'site-profile';
+  });
+  const sidebarStorageKey = 'symballo:admin:sidebar-collapsed';
+
   onMount(async () => {
+    sidebarCollapsed = localStorage.getItem(sidebarStorageKey) === 'true';
+
     await checkUnpublished();
     window.addEventListener('open-publish', openPublishDialog);
-    window.addEventListener('show-toast', (e: Event) => {
-      showToast((e as CustomEvent).detail);
-    });
     window.addEventListener('publish-complete', async () => {
       await checkUnpublished();
     });
+  });
+
+  $effect(() => {
+    localStorage.setItem(sidebarStorageKey, String(sidebarCollapsed));
   });
 
   async function checkUnpublished() {
@@ -63,62 +109,101 @@
     try {
       await api.publish({ type: 'all' });
       showPublishDialog = false;
-      showToast('Published successfully');
-      await checkUnpublished();
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: 'Published successfully' }));
+      window.dispatchEvent(new CustomEvent('publish-complete'));
     } catch (err) {
-      showToast(`Publish failed: ${err instanceof Error ? err.message : 'unknown'}`);
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: `Publish failed: ${err instanceof Error ? err.message : 'unknown'}` }));
     } finally { publishing = false; }
   }
 
-  function handlePreview() { window.open(api.previewUrl(), '_blank'); }
-  function showToast(msg: string) { toast = msg; setTimeout(() => (toast = ''), 3000); }
+  function handleViewSite() { window.open('/', '_blank'); }
 </script>
 
-<svelte:head><title>EmDash Admin</title></svelte:head>
-
-<div class="admin-shell">
-  <aside class="sidebar" role="navigation" aria-label="Admin navigation">
-    <div class="sidebar-header"><a href="/admin" class="logo">EmDash</a></div>
-    <nav>
-      <ul>
-        {#each navItems as item}
-          <li>
-            <a href={item.href} class="nav-link">
-              <span class="nav-icon" aria-hidden="true">{item.icon}</span>
-              {item.label}
-            </a>
-          </li>
+<div class="admin-shell" class:sidebar-collapsed={sidebarCollapsed}>
+  <aside class="left-rail" class:collapsed={sidebarCollapsed} role="navigation" aria-label="Admin navigation">
+    <div class="rail-brand">
+      <div class="brand-title">Arthur's Hot Dogs</div>
+      <div class="brand-subtitle">Clayton, NC</div>
+    </div>
+    <section class="rail-group">
+      <div class="rail-section-title">General</div>
+      <nav class="rail-nav">
+        {#each navItems.filter((item) => item.section === 'content') as item}
+          <a href={item.href} class="nav-link" class:active={activeSidebarId === item.id}>
+            <item.icon size={16} stroke={1.8} />
+            <span class="nav-label">{item.label}</span>
+          </a>
         {/each}
-      </ul>
-    </nav>
-    <div class="sidebar-footer"><a href="/" target="_blank" class="view-site">View Site ↗</a></div>
+      </nav>
+    </section>
+    <section class="rail-group">
+      <div class="rail-section-title">Site</div>
+      <nav class="rail-nav">
+        {#each navItems.filter((item) => item.section === 'settings') as item}
+          <a href={item.href} class="nav-link" class:active={activeSidebarId === item.id}>
+            <item.icon size={16} stroke={1.8} />
+            <span class="nav-label">{item.label}</span>
+          </a>
+        {/each}
+      </nav>
+    </section>
+    <section class="rail-group">
+      <div class="rail-section-title">Workspace</div>
+      <nav class="rail-nav">
+        <a class="nav-link" href="/account"><IconUserCircle size={16} stroke={1.8} /><span class="nav-label">Account</span></a>
+        <a class="nav-link" href="/admin/settings"><IconHelpCircle size={16} stroke={1.8} /><span class="nav-label">Guide</span></a>
+        <a class="nav-link" href="/admin/settings"><IconHeadset size={16} stroke={1.8} /><span class="nav-label">Support</span></a>
+        <button class="nav-link rail-action" type="button" onclick={handleViewSite}><IconExternalLink size={16} stroke={1.8} /><span class="nav-label">Open site</span></button>
+      </nav>
+    </section>
+    <div class="rail-account">
+      <div class="rail-account-title">Your Symballo Account</div>
+      <a class="nav-link" href="/admin/settings"><IconUserCircle size={16} stroke={1.8} /><span>Account Settings</span></a>
+    </div>
+    <div class="rail-footer">Powered by Symballo</div>
   </aside>
 
-  <div class="main-content">
-    <header class="admin-header">
-      <div class="header-left"><h1 class="page-title"><slot name="title" /></h1></div>
-      <div class="header-right">
+  <section class="center-shell">
+    <header class="center-topbar">
+      <div class="topbar-actions">
+        <button
+          class="btn btn-secondary icon-only"
+          aria-label={sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+          title={sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+          onclick={() => (sidebarCollapsed = !sidebarCollapsed)}
+        >
+          <IconMenu2 size={16} stroke={1.8} />
+        </button>
+        <h1 class="app-section-title">{pageTitle}</h1>
+      </div>
+      <div class="topbar-meta">
         {#if hasUnpublishedChanges}
-          <span class="unpublished-indicator">Unpublished changes</span>
-          <button class="btn btn-secondary" onclick={openPublishDialog}>Publish</button>
+          <span class="unsaved">Unsaved changes</span>
+          <button class="btn btn-primary" onclick={openPublishDialog}>Save Changes</button>
         {/if}
-        <button class="btn btn-secondary" onclick={handlePreview}>Preview</button>
       </div>
     </header>
-    <main class="content"><slot /></main>
-  </div>
+
+    <main class="center-main">
+      <section class="content">
+        {@render children?.()}
+      </section>
+    </main>
+  </section>
 </div>
 
 {#if showPublishDialog}
-  <div class="overlay" onclick={closePublishDialog} role="dialog" aria-modal="true" aria-label="Publish changes">
-    <div class="dialog" onclick={(e) => e.stopPropagation()} tabindex="-1">
+  <div class="overlay" role="dialog" aria-modal="true" aria-label="Publish changes">
+    <div class="dialog" tabindex="-1">
       <h2>Publish Changes</h2>
       {#if publishLoading}
         <p>Loading changes...</p>
       {:else if publishChanges.length === 0}
-        <p style="color:#6b7280;">No unpublished changes detected.</p>
+        <p class="text-muted">No unpublished changes detected.</p>
       {:else}
-        <ul class="change-list">{#each publishChanges as change}<li>{change}</li>{/each}</ul>
+        <ul class="change-list">
+          {#each publishChanges as change}<li>{change}</li>{/each}
+        </ul>
       {/if}
       <div class="dialog-actions">
         <button class="btn" onclick={closePublishDialog} disabled={publishing}>Cancel</button>
@@ -129,7 +214,3 @@
     </div>
   </div>
 {/if}
-
-{#if toast}<div class="toast">{toast}</div>{/if}
-
-

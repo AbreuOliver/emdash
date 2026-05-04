@@ -1,35 +1,39 @@
 const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:4321';
 
-export async function fetchFromApi(path: string): Promise<unknown> {
-  const res = await fetch(`${API_URL}${path}`);
-  if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText} at ${path}`);
-  return res.json();
+async function safeFetch<T>(path: string, fallback: T): Promise<T> {
+  try {
+    const res = await fetch(`${API_URL}${path}`);
+    if (!res.ok) return fallback;
+    return res.json() as Promise<T>;
+  } catch {
+    return fallback;
+  }
 }
 
 export async function getSettings() {
-  return fetchFromApi('/api/settings') as Promise<Record<string, unknown>>;
+  return safeFetch<Record<string, string> | null>('/api/settings', null);
 }
 
 export async function getHours() {
-  return fetchFromApi('/api/hours') as Promise<Array<Record<string, unknown>>>;
+  return safeFetch<Array<Record<string, unknown>>>('/api/hours', []);
 }
 
 export async function getPosts() {
-  return fetchFromApi('/api/posts') as Promise<Array<Record<string, unknown>>>;
+  return safeFetch<Array<Record<string, unknown>>>('/api/posts', []);
 }
 
 export async function getPages() {
-  return fetchFromApi('/api/pages') as Promise<Array<Record<string, unknown>>>;
+  return safeFetch<Array<Record<string, unknown>>>('/api/pages', []);
 }
 
 export async function getEvents() {
-  return fetchFromApi('/api/events?upcoming=true') as Promise<Array<Record<string, unknown>>>;
+  return safeFetch<Array<Record<string, unknown>>>('/api/events?upcoming=true', []);
 }
 
 export async function getBanners() {
-  return fetchFromApi('/api/banners') as Promise<Array<Record<string, unknown>>>;
+  return safeFetch<Array<Record<string, unknown>>>('/api/banners', []);
 }
 
 export async function getTemplates() {
-  return fetchFromApi('/api/templates') as Promise<Array<Record<string, unknown>>>;
+  return safeFetch<Array<Record<string, unknown>>>('/api/templates', []);
 }

@@ -71,7 +71,7 @@
   }
 
   .admin-theme {
-    @apply block min-h-screen bg-[var(--admin-shell-bg)] text-[var(--admin-text-soft)];
+    @apply block min-h-screen bg-[#f3f5f9] text-[var(--admin-text-soft)];
   }
 
   .admin-theme.is-dark {
@@ -104,8 +104,52 @@
   }
 
   .admin-panel {
-    @apply rounded-lg p-4;
+    @apply rounded-xl border p-4;
     background: var(--admin-panel-bg);
+    border-color: var(--admin-panel-border);
+  }
+
+  .admin-rail {
+    @apply p-4;
+    background: #f7f8fb;
+    /*border-right: 1px solid #e3e7ef;*/
+  }
+
+  .admin-theme.is-dark .admin-rail {
+    border-right-color: #1d2a3d;
+  }
+
+  .admin-rail-section-title {
+    @apply mb-2 mt-5 px-2 text-[11px] uppercase tracking-[0.08em];
+    color: var(--admin-text-soft);
+  }
+
+  .admin-rail-link {
+    @apply flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[15px] font-medium transition;
+    color: var(--admin-text-strong);
+  }
+
+  .admin-rail-link:hover {
+    background: #f0f2f8;
+  }
+
+  .admin-theme.is-dark .admin-rail-link:hover {
+    background: #0c1521;
+  }
+
+  .admin-rail-link.active {
+    background: #e5e7f7;
+    color: #1a2640;
+  }
+
+  .admin-theme.is-dark .admin-rail-link.active {
+    background: #172338;
+    color: #f4f7ff;
+  }
+
+  .admin-rail-icon {
+    @apply inline-flex h-5 w-5 items-center justify-center text-xs;
+    color: var(--admin-text-soft);
   }
 
   .admin-pill {

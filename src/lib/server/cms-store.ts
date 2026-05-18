@@ -4,6 +4,8 @@ import { dirname, resolve } from 'node:path';
 import { defaultCmsData, defaultWeeklyHours, type BusinessHoursEntry, type CmsData, type Page, type Post } from '$lib/cms-schema';
 
 const cmsPath = resolve(process.cwd(), 'data', 'cms.json');
+const cmsDriver = process.env.CMS_DRIVER ?? 'file';
+const allowPlaceholderServices = process.env.ALLOW_PLACEHOLDER_SERVICES === '1';
 
 function normalizeHours(value: unknown): BusinessHoursEntry[] {
   if (!Array.isArray(value)) {
@@ -107,6 +109,13 @@ function normalizeCmsData(raw: unknown): CmsData {
 }
 
 export async function readCmsData(): Promise<CmsData> {
+  if (cmsDriver === 'turso') {
+    if (!allowPlaceholderServices) {
+      throw new Error('CMS_DRIVER=turso is selected but Turso integration is not wired yet.');
+    }
+    return structuredClone(defaultCmsData);
+  }
+
   try {
     const raw = await readFile(cmsPath, 'utf8');
     return normalizeCmsData(JSON.parse(raw));
@@ -116,6 +125,13 @@ export async function readCmsData(): Promise<CmsData> {
 }
 
 export async function writeCmsData(data: CmsData): Promise<void> {
+  if (cmsDriver === 'turso') {
+    if (!allowPlaceholderServices) {
+      throw new Error('CMS_DRIVER=turso is selected but Turso integration is not wired yet.');
+    }
+    return;
+  }
+
   await mkdir(dirname(cmsPath), { recursive: true });
   await writeFile(cmsPath, JSON.stringify(normalizeCmsData(data), null, 2), 'utf8');
 }

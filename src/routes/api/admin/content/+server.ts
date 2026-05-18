@@ -1,13 +1,17 @@
 import { json } from '@sveltejs/kit';
 import type { CmsData } from '$lib/cms-schema';
+import { requireAdminUser } from '$lib/server/auth/guard';
 
 import { readCmsData, writeCmsData } from '$lib/server/cms-store';
 
-export async function GET() {
+export async function GET(event) {
+  requireAdminUser(event);
   return json(await readCmsData());
 }
 
-export async function PUT({ request }) {
+export async function PUT(event) {
+  requireAdminUser(event);
+  const { request } = event;
   const payload = (await request.json()) as CmsData;
 
   if (!Array.isArray(payload.site?.hours) || payload.site.hours.length < 7) {

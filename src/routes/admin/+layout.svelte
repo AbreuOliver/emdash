@@ -18,7 +18,7 @@
     Plus
   } from 'lucide-svelte';
 
-  let { children } = $props();
+  let { data, children } = $props();
 
   const links = [
     { group: '', items: [{ href: '/admin', label: 'Dashboard', icon: LayoutDashboard }] },
@@ -65,6 +65,11 @@
     if (currentPath === '/admin/hours') return 'New Day';
     return 'New';
   });
+
+  async function signOut() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/admin/login';
+  }
 </script>
 
 <div class="admin-theme">
@@ -88,10 +93,10 @@
         {/each}
       </div>
       <div class="px-4 pb-4">
-        <button class="w-full border p-3 text-left" style={`border-color: var(--admin-panel-border); background: #f0f2f6; border-radius: 14px;`}>
-          <p class="m-0 text-sm font-semibold text-[var(--admin-text-strong)]">Your Symballo Account</p>
-          <p class="m-0 mt-1 text-sm text-[var(--admin-text-strong)]">Account Settings</p>
-        </button>
+        <div class="w-full border p-3 text-left" style={`border-color: var(--admin-panel-border); background: #f0f2f6; border-radius: 14px;`}>
+          <p class="m-0 text-sm font-semibold text-[var(--admin-text-strong)]">{data.user?.email ?? 'Admin User'}</p>
+          <button class="admin-pill-ghost mt-2 !min-h-0 !px-3 !py-1.5 !text-xs" onclick={signOut}>Sign out</button>
+        </div>
       </div>
     </aside>
 

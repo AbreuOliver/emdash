@@ -6,6 +6,7 @@ tracker:
   active_states:
     - In Progress
   terminal_states:
+    - In Review
     - Completed
     - Canceled
 
@@ -26,11 +27,6 @@ hooks:
   before_run: |
     git checkout -B symphony/{{ issue.identifier }}
     pnpm install
-    pnpm run format:check
-    pnpm run check
-    pnpm run lint
-    pnpm run build
-
 
 agent:
   max_concurrent_agents: 1
@@ -42,7 +38,6 @@ ollama:
   turn_timeout_ms: 3600000
   read_timeout_ms: 300000
   stall_timeout_ms: 1800000
-
 
 server:
   port: 4321
@@ -73,53 +68,67 @@ No description provided.
 Instructions:
 
 1. This is an unattended orchestration session. Never ask a human to perform follow-up actions.
+
 2. Linear state management is mandatory:
-   - At the start of each run, move the issue to `In Progress` if it is currently `Backlog` or `Planned`.
-   - When implementation is complete and checks pass, move the issue to `Completed`.
-   - If truly blocked (missing auth/secrets/permissions/external dependency), leave a blocker comment and move the issue to `Canceled`.
-3. Use the `linear_graphql` tool for state changes:
-   - Query states:
-    ```graphql
-    query GetWorkflowStates {
-      workflowStates {
-        nodes { id name }
-      }
-    }
-    ```
-   - Move issue:
-    ```graphql
-    mutation MoveIssue($id: String!, $stateId: String!) {
-      issueUpdate(id: $id, input: { stateId: $stateId }) {
-        success
-      }
-    }
-    ```
-   - Add comment:
-    ```graphql
-    mutation CommentIssue($issueId: String!, $body: String!) {
-      commentCreate(input: { issueId: $issueId, body: $body }) {
-        success
-      }
-    }
-    ```
+- At the start of each run, move the issue to `In Progress` if needed.
+- If blocked (missing auth/secrets/permissions/external dependency), post a blocker comment and move to `Canceled`.
+- When a PR is successfully created, move the issue to `In Review`.
+- If no review state is used or PR is not needed, move to `Completed` only after all checks pass.
+
+3. Use the `linear_graphql` tool for state changes/comments with these operations:
+
+```graphql
+query GetWorkflowStates {
+  workflowStates {
+    nodes { id name }
+  }
+}
+```
+
+```graphql
+mutation MoveIssue($id: String!, $stateId: String!) {
+  issueUpdate(id: $id, input: { stateId: $stateId }) {
+    success
+  }
+}
+```
+
+```graphql
+mutation CommentIssue($issueId: String!, $body: String!) {
+  commentCreate(input: { issueId: $issueId, body: $body }) {
+    success
+  }
+}
+```
+
 4. Work only in the provided repository copy. Do not touch any other path.
 5. Keep changes scoped to this ticket. Prefer small, direct edits.
 6. Do not introduce new dependencies unless clearly required by the ticket.
 7. Do not weaken/skip/remove checks to force a pass.
+
 8. After code changes, run:
-   - `pnpm run quality`
-   - If UI/UX behavior changed: `pnpm run test:e2e`
+- `pnpm run quality`
+- If UI/UX behavior changed: `pnpm run test:e2e`
+
 9. If checks fail, fix and rerun until passing.
 10. Before ending, ensure formatting and production build succeed.
 11. Final response must not include speculative future work.
-12. Linear comment requirements are mandatory. Use `linear_graphql` to add comments in these cases:
-   - Blocked run:
-     - Include blocker type (missing secret/permission/dependency/tool failure), exact failing command(s), short error output, and what was attempted.
-     - Then move the issue to `Canceled`.
-   - Successful run:
-     - Include files changed, commands run, check/test results, and remaining risks (if any).
-   - State transition:
-     - Whenever you move state (for example `In Progress` or `Completed`), post a short reason comment.
-13. Reuse the GraphQL operations defined in step 3 for all state transitions and comments.
+
+12. Linear comment requirements are mandatory:
+- On blocker: include blocker type, exact failing command(s), short error output, and attempted remediation.
+- On successful implementation: include files changed, commands run, check/test results, and remaining risks (if any).
+- On every state transition: post a short reason comment.
+
+13. If a PR is created, you must:
+- Post a Linear comment with the PR URL.
+- Move the issue to `In Review`.
+- Verify state transition succeeded before ending.
+
 14. For comments, always use `issueId = {{ issue.id }}`.
-15. Final response must include: files changed, commands run, checks passed, blockers (if any), and confirmation that a Linear comment was posted.
+
+15. Final response must include:
+- files changed
+- commands run
+- checks passed
+- blockers (if any)
+- confirmation that a Linear comment was posted.

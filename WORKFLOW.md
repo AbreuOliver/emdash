@@ -19,10 +19,12 @@ workspace:
 hooks:
   after_create: |
     git clone --depth 1 https://github.com/AbreuOliver/emdash.git .
+    git remote set-url origin https://github.com/AbreuOliver/emdash.git
     git checkout -B symphony/{{ issue.identifier }}
     pnpm install
     pnpm run check
     pnpm run build
+
 
   before_run: |
     git checkout -B symphony/{{ issue.identifier }}
@@ -120,6 +122,8 @@ mutation CommentIssue($issueId: String!, $body: String!) {
 - On every state transition: post a short reason comment.
 
 13. If a PR is created, you must:
+- If a PR already exists for this issue branch, update that PR instead of creating a new one.
+- Use this title format when creating/updating PRs: {{ issue.identifier }}: {{ issue.title }}
 - Post a Linear comment with the PR URL.
 - Move the issue to `In Review`.
 - Verify state transition succeeded before ending.

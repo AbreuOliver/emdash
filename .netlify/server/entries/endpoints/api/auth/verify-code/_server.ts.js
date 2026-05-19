@@ -1,6 +1,7 @@
 import { json } from "@sveltejs/kit";
 import { d as dev } from "../../../../../chunks/false.js";
-import { v as verifyOtpChallenge, a as authConfig } from "../../../../../chunks/store.js";
+import { a as authConfig } from "../../../../../chunks/config.js";
+import { v as verifyOtpChallenge } from "../../../../../chunks/store.js";
 async function POST({ request, cookies }) {
   const body = await request.json().catch(() => ({}));
   const email = typeof body.email === "string" ? body.email : "";

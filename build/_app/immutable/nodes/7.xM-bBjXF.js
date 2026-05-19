@@ -1,0 +1,1 @@
+import{a as e,f as n}from"../chunks/BMJA893N.js";import"../chunks/Dukx8Osb.js";var o=n('<section class="admin-panel"><h2 class="m-0 text-2xl text-[var(--admin-text-strong)]">appearance</h2> <p class="mt-2 text-[var(--admin-text-soft)]">Placeholder content for /admin/appearance.</p></section>');function s(a){var t=o();e(a,t)}export{s as component};

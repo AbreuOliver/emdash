@@ -10,6 +10,10 @@ const defaultWeeklyHours = [
   { label: "Sunday", opens: "10:00", closes: "20:00", closed: false }
 ];
 const defaultCmsData = {
+  meta: {
+    revision: 1,
+    updatedAt: "2026-01-01T00:00:00.000Z"
+  },
   site: {
     title: "Symballo Brasserie",
     tagline: "Regional ingredients. Memorable evenings.",
@@ -51,6 +55,12 @@ const defaultCmsData = {
 const cmsPath = resolve(process.cwd(), "data", "cms.json");
 const cmsDriver = process.env.CMS_DRIVER ?? "file";
 const allowPlaceholderServices = process.env.ALLOW_PLACEHOLDER_SERVICES === "1";
+class CmsConflictError extends Error {
+  constructor(message = "CMS data was modified by another session. Reload and try again.") {
+    super(message);
+    this.name = "CmsConflictError";
+  }
+}
 function normalizeHours(value) {
   if (!Array.isArray(value)) {
     return defaultWeeklyHours.map((entry) => ({ ...entry }));
@@ -116,7 +126,14 @@ function normalizeCmsData(raw) {
   }
   const data = raw;
   const site = data.site ?? {};
+  const metaInput = data.meta ?? {};
+  const revision = typeof metaInput.revision === "number" && Number.isFinite(metaInput.revision) ? Math.max(1, Math.floor(metaInput.revision)) : 1;
+  const updatedAt = typeof metaInput.updatedAt === "string" && metaInput.updatedAt.trim() ? metaInput.updatedAt : defaultCmsData.meta.updatedAt;
   return {
+    meta: {
+      revision,
+      updatedAt
+    },
     site: {
       title: typeof site.title === "string" ? site.title : defaultCmsData.site.title,
       tagline: typeof site.tagline === "string" ? site.tagline : defaultCmsData.site.tagline,
@@ -145,17 +162,39 @@ async function readCmsData() {
     return structuredClone(defaultCmsData);
   }
 }
-async function writeCmsData(data) {
+async function writeCmsData(data, options = {}) {
+  const { expectedRevision } = options;
   if (cmsDriver === "turso") {
     if (!allowPlaceholderServices) {
       throw new Error("CMS_DRIVER=turso is selected but Turso integration is not wired yet.");
     }
-    return;
+    const normalized2 = normalizeCmsData(data);
+    return {
+      ...normalized2,
+      meta: {
+        revision: normalized2.meta.revision + 1,
+        updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+      }
+    };
   }
+  const current = await readCmsData();
+  if (typeof expectedRevision === "number" && current.meta.revision !== expectedRevision) {
+    throw new CmsConflictError();
+  }
+  const normalized = normalizeCmsData(data);
+  const next = {
+    ...normalized,
+    meta: {
+      revision: current.meta.revision + 1,
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    }
+  };
   await mkdir(dirname(cmsPath), { recursive: true });
-  await writeFile(cmsPath, JSON.stringify(normalizeCmsData(data), null, 2), "utf8");
+  await writeFile(cmsPath, JSON.stringify(next, null, 2), "utf8");
+  return next;
 }
 export {
+  CmsConflictError as C,
   readCmsData as r,
   writeCmsData as w
 };

@@ -42,6 +42,10 @@ export type Page = {
 };
 
 export type CmsData = {
+  meta: {
+    revision: number;
+    updatedAt: string;
+  };
   site: SiteSettings;
   posts: Post[];
   pages: Page[];
@@ -58,6 +62,10 @@ export const defaultWeeklyHours: BusinessHoursEntry[] = [
 ];
 
 export const defaultCmsData: CmsData = {
+  meta: {
+    revision: 1,
+    updatedAt: '2026-01-01T00:00:00.000Z'
+  },
   site: {
     title: 'Symballo Brasserie',
     tagline: 'Regional ingredients. Memorable evenings.',

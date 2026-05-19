@@ -1,4 +1,5 @@
-import { g as getSessionByToken, a as authConfig } from "../chunks/store.js";
+import { a as authConfig } from "../chunks/config.js";
+import { g as getSessionByToken } from "../chunks/store.js";
 function resolveSessionUser(sessionToken) {
   const session = getSessionByToken(sessionToken);
   if (session) {

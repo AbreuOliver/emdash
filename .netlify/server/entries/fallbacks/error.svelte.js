@@ -1,4 +1,4 @@
-import { e as escape_html } from "../../chunks/renderer.js";
+import { e as escape_html } from "../../chunks/attributes.js";
 import { p as page } from "../../chunks/index.js";
 function Error($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {

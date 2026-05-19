@@ -1,4 +1,4 @@
-import { p as noop } from "./renderer.js";
+import { n as noop } from "./attributes.js";
 import { w as writable } from "./exports.js";
 import "@sveltejs/kit/internal/server";
 import "./root.js";

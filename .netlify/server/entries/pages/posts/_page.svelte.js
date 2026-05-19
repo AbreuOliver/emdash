@@ -1,4 +1,5 @@
-import { o as head, g as ensure_array_like, a as attr, e as escape_html } from "../../../chunks/renderer.js";
+import { k as head, e as ensure_array_like } from "../../../chunks/renderer.js";
+import { a as attr, e as escape_html } from "../../../chunks/attributes.js";
 function _page($$renderer, $$props) {
   $$renderer.component(($$renderer2) => {
     let { data } = $$props;

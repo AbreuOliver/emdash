@@ -10,7 +10,7 @@ return {
 	assets: new Set([]),
 	mimeTypes: {},
 	_: {
-		client: {start:"_app/immutable/entry/start.0xcDoepY.js",app:"_app/immutable/entry/app.BEuf2ijM.js",imports:["_app/immutable/entry/start.0xcDoepY.js","_app/immutable/chunks/C7_bOy8f.js","_app/immutable/chunks/CSc2bR8F.js","_app/immutable/chunks/B8KfODEG.js","_app/immutable/entry/app.BEuf2ijM.js","_app/immutable/chunks/CSc2bR8F.js","_app/immutable/chunks/BS86lrJn.js","_app/immutable/chunks/B1mKZIRe.js","_app/immutable/chunks/B8KfODEG.js","_app/immutable/chunks/DBT6TplI.js","_app/immutable/chunks/CrV6rAX8.js","_app/immutable/chunks/DPiBb6Na.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
+		client: {start:"_app/immutable/entry/start.GB33r3-w.js",app:"_app/immutable/entry/app.BBDVl7yj.js",imports:["_app/immutable/entry/start.GB33r3-w.js","_app/immutable/chunks/BcrIhj6r.js","_app/immutable/chunks/geADuKD8.js","_app/immutable/chunks/CUuyC3Fp.js","_app/immutable/entry/app.BBDVl7yj.js","_app/immutable/chunks/geADuKD8.js","_app/immutable/chunks/BCRsK5dA.js","_app/immutable/chunks/BMJA893N.js","_app/immutable/chunks/CUuyC3Fp.js","_app/immutable/chunks/BPRwLzW7.js","_app/immutable/chunks/BQDvbZGv.js","_app/immutable/chunks/CLYOk4gN.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
 		nodes: [
 			__memo(() => import('./nodes/0.js')),
 			__memo(() => import('./nodes/1.js')),
@@ -158,6 +158,27 @@ return {
 				params: [],
 				page: null,
 				endpoint: __memo(() => import('./entries/endpoints/api/admin/content/_server.ts.js'))
+			},
+			{
+				id: "/api/admin/pages",
+				pattern: /^\/api\/admin\/pages\/?$/,
+				params: [],
+				page: null,
+				endpoint: __memo(() => import('./entries/endpoints/api/admin/pages/_server.ts.js'))
+			},
+			{
+				id: "/api/admin/posts",
+				pattern: /^\/api\/admin\/posts\/?$/,
+				params: [],
+				page: null,
+				endpoint: __memo(() => import('./entries/endpoints/api/admin/posts/_server.ts.js'))
+			},
+			{
+				id: "/api/auth/dev-login",
+				pattern: /^\/api\/auth\/dev-login\/?$/,
+				params: [],
+				page: null,
+				endpoint: __memo(() => import('./entries/endpoints/api/auth/dev-login/_server.ts.js'))
 			},
 			{
 				id: "/api/auth/logout",

@@ -1,14 +1,5 @@
 import { randomInt, randomUUID } from "node:crypto";
-const dayMs = 24 * 60 * 60 * 1e3;
-const allowedAdminEmails = (process.env.ADMIN_ALLOWED_EMAILS ?? "owner@example.com").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-const authConfig = {
-  sessionCookieName: "emdash_session",
-  sessionTtlMs: Number(process.env.AUTH_SESSION_TTL_MS ?? dayMs),
-  otpTtlMs: Number(process.env.AUTH_OTP_TTL_MS ?? 10 * 60 * 1e3),
-  allowDevBypass: process.env.AUTH_ALLOW_DEV_BYPASS === "1",
-  exposeDevOtp: process.env.AUTH_EXPOSE_DEV_OTP === "1",
-  allowedAdminEmails
-};
+import { a as authConfig } from "./config.js";
 const otpByEmail = /* @__PURE__ */ new Map();
 const sessionsByToken = /* @__PURE__ */ new Map();
 function cleanupExpired() {
@@ -26,6 +17,21 @@ function normalizeEmail(email) {
 function canUseAdmin(email) {
   const normalized = normalizeEmail(email);
   return authConfig.allowedAdminEmails.includes(normalized);
+}
+function createSession(email) {
+  const normalized = normalizeEmail(email);
+  const user = {
+    id: normalized,
+    email: normalized,
+    role: normalized === authConfig.allowedAdminEmails[0] ? "owner" : "admin"
+  };
+  const session = {
+    token: randomUUID(),
+    user,
+    expiresAt: Date.now() + authConfig.sessionTtlMs
+  };
+  sessionsByToken.set(session.token, session);
+  return session;
 }
 function createOtpChallenge(email) {
   cleanupExpired();
@@ -48,19 +54,14 @@ function verifyOtpChallenge(email, code) {
   if (challenge.code !== code.trim()) {
     return { ok: false, error: "Invalid verification code." };
   }
-  const user = {
-    id: normalized,
-    email: normalized,
-    role: normalized === authConfig.allowedAdminEmails[0] ? "owner" : "admin"
-  };
-  const session = {
-    token: randomUUID(),
-    user,
-    expiresAt: Date.now() + authConfig.sessionTtlMs
-  };
   otpByEmail.delete(normalized);
-  sessionsByToken.set(session.token, session);
+  const session = createSession(normalized);
   return { ok: true, session };
+}
+function createDevSession() {
+  cleanupExpired();
+  const email = authConfig.allowedAdminEmails[0] ?? "owner@example.com";
+  return createSession(email);
 }
 function getSessionByToken(token) {
   cleanupExpired();
@@ -78,8 +79,8 @@ function revokeSession(token) {
   sessionsByToken.delete(token);
 }
 export {
-  authConfig as a,
-  createOtpChallenge as c,
+  createOtpChallenge as a,
+  createDevSession as c,
   getSessionByToken as g,
   revokeSession as r,
   verifyOtpChallenge as v

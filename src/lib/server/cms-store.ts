@@ -7,6 +7,13 @@ const cmsPath = resolve(process.cwd(), 'data', 'cms.json');
 const cmsDriver = process.env.CMS_DRIVER ?? 'file';
 const allowPlaceholderServices = process.env.ALLOW_PLACEHOLDER_SERVICES === '1';
 
+export class CmsConflictError extends Error {
+  constructor(message = 'CMS data was modified by another session. Reload and try again.') {
+    super(message);
+    this.name = 'CmsConflictError';
+  }
+}
+
 function normalizeHours(value: unknown): BusinessHoursEntry[] {
   if (!Array.isArray(value)) {
     return defaultWeeklyHours.map((entry) => ({ ...entry }));
@@ -91,8 +98,15 @@ function normalizeCmsData(raw: unknown): CmsData {
 
   const data = raw as Partial<CmsData>;
   const site = ((data.site ?? {}) as Record<string, unknown>);
+  const metaInput = (data.meta ?? {}) as Record<string, unknown>;
+  const revision = typeof metaInput.revision === 'number' && Number.isFinite(metaInput.revision) ? Math.max(1, Math.floor(metaInput.revision)) : 1;
+  const updatedAt = typeof metaInput.updatedAt === 'string' && metaInput.updatedAt.trim() ? metaInput.updatedAt : defaultCmsData.meta.updatedAt;
 
   return {
+    meta: {
+      revision,
+      updatedAt
+    },
     site: {
       title: typeof site.title === 'string' ? site.title : defaultCmsData.site.title,
       tagline: typeof site.tagline === 'string' ? site.tagline : defaultCmsData.site.tagline,
@@ -124,14 +138,42 @@ export async function readCmsData(): Promise<CmsData> {
   }
 }
 
-export async function writeCmsData(data: CmsData): Promise<void> {
+type WriteCmsOptions = {
+  expectedRevision?: number;
+};
+
+export async function writeCmsData(data: CmsData, options: WriteCmsOptions = {}): Promise<CmsData> {
+  const { expectedRevision } = options;
+
   if (cmsDriver === 'turso') {
     if (!allowPlaceholderServices) {
       throw new Error('CMS_DRIVER=turso is selected but Turso integration is not wired yet.');
     }
-    return;
+    const normalized = normalizeCmsData(data);
+    return {
+      ...normalized,
+      meta: {
+        revision: normalized.meta.revision + 1,
+        updatedAt: new Date().toISOString()
+      }
+    };
   }
 
+  const current = await readCmsData();
+  if (typeof expectedRevision === 'number' && current.meta.revision !== expectedRevision) {
+    throw new CmsConflictError();
+  }
+
+  const normalized = normalizeCmsData(data);
+  const next: CmsData = {
+    ...normalized,
+    meta: {
+      revision: current.meta.revision + 1,
+      updatedAt: new Date().toISOString()
+    }
+  };
+
   await mkdir(dirname(cmsPath), { recursive: true });
-  await writeFile(cmsPath, JSON.stringify(normalizeCmsData(data), null, 2), 'utf8');
+  await writeFile(cmsPath, JSON.stringify(next, null, 2), 'utf8');
+  return next;
 }

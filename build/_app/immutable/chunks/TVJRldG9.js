@@ -1,0 +1,1 @@
+import{y as f,b as u,a8 as _,a9 as o,v as t,J as g,a7 as i,G as l,A as d,I as p,B as v}from"./geADuKD8.js";function C(n,r){let a=null,y=t;var s;if(t){a=p;for(var e=v(document.head);e!==null&&(e.nodeType!==g||e.data!==n);)e=i(e);if(e===null)l(!1);else{var E=i(e);e.remove(),d(E)}}t||(s=document.head.appendChild(f()));try{u(()=>r(s),_|o)}finally{y&&(l(!0),d(a))}}export{C as h};

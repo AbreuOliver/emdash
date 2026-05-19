@@ -1,5 +1,6 @@
 import { json } from "@sveltejs/kit";
-import { c as createOtpChallenge, a as authConfig } from "../../../../../chunks/store.js";
+import { a as authConfig } from "../../../../../chunks/config.js";
+import { a as createOtpChallenge } from "../../../../../chunks/store.js";
 async function POST({ request }) {
   const body = await request.json().catch(() => ({}));
   const email = typeof body.email === "string" ? body.email : "";

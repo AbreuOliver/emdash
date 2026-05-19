@@ -1,5 +1,6 @@
-import { s as sanitize_props, r as rest_props, f as fallback, b as attributes, c as clsx, g as ensure_array_like, h as element, i as slot, j as bind_props, k as spread_props, l as attr_style, e as escape_html, m as attr_class, a as attr, d as derived } from "../../../chunks/renderer.js";
+import { s as sanitize_props, r as rest_props, a as attributes, e as ensure_array_like, b as element, c as slot, f as bind_props, g as spread_props, h as attr_style, i as attr_class, d as derived } from "../../../chunks/renderer.js";
 import { p as page } from "../../../chunks/index.js";
+import { f as fallback, c as clsx, e as escape_html, a as attr } from "../../../chunks/attributes.js";
 const defaultAttributes = {
   xmlns: "http://www.w3.org/2000/svg",
   width: 24,

@@ -1,8 +1,9 @@
 import { json } from '@sveltejs/kit';
 import type { CmsData } from '$lib/cms-schema';
 import { requireAdminUser } from '$lib/server/auth/guard';
+import { validateCmsPayload } from '$lib/server/cms/validation';
 
-import { readCmsData, writeCmsData } from '$lib/server/cms-store';
+import { CmsConflictError, readCmsData, writeCmsData } from '$lib/server/cms-store';
 
 export async function GET(event) {
   requireAdminUser(event);
@@ -14,22 +15,18 @@ export async function PUT(event) {
   const { request } = event;
   const payload = (await request.json()) as CmsData;
 
-  if (!Array.isArray(payload.site?.hours) || payload.site.hours.length < 7) {
-    return json({ ok: false, error: 'Hours must include at least 7 days.' }, { status: 400 });
+  const validationError = validateCmsPayload(payload);
+  if (validationError) {
+    return json({ ok: false, error: validationError }, { status: 400 });
   }
 
-  for (const post of payload.posts ?? []) {
-    if (!post.bannerEnabled) continue;
-
-    if (!post.bannerStartDate || !post.bannerEndDate) {
-      return json({ ok: false, error: `Banner dates are required for "${post.title || post.slug}".` }, { status: 400 });
+  try {
+    const saved = await writeCmsData(payload, { expectedRevision: payload.meta?.revision });
+    return json({ ok: true, meta: saved.meta });
+  } catch (error) {
+    if (error instanceof CmsConflictError) {
+      return json({ ok: false, error: error.message }, { status: 409 });
     }
-
-    if (post.bannerEndDate < post.bannerStartDate) {
-      return json({ ok: false, error: `Banner end date must be on or after start date for "${post.title || post.slug}".` }, { status: 400 });
-    }
+    throw error;
   }
-
-  await writeCmsData(payload);
-  return json({ ok: true });
 }

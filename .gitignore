@@ -69,3 +69,9 @@ __screenshots__/
 examples/wp-theme-unit-test/
 .opencode
 .symphony*
+
+# Build outputs & Generated artifacts
+build/
+.netlify/
+data/audit.log
+data/cms.json

@@ -21,6 +21,8 @@
     instagramUrl: ''
   });
 
+  let revision = $state(0);
+  let updatedAt = $state('');
   let loading = $state(true);
   let saving = $state(false);
   let error = $state('');
@@ -30,7 +32,7 @@
     loading = true;
     error = '';
 
-    const res = await fetch('/api/admin/content');
+    const res = await fetch('/api/admin/site-profile');
     const data = await res.json();
 
     if (!res.ok) {
@@ -40,15 +42,17 @@
     }
 
     form = {
-      title: data.site.title ?? '',
-      tagline: data.site.tagline ?? '',
-      phone: data.site.phone ?? '',
-      email: data.site.email ?? '',
-      address: data.site.address ?? '',
-      facebookUrl: data.site.facebookUrl ?? '',
-      instagramUrl: data.site.instagramUrl ?? ''
+      title: data.item.title ?? '',
+      tagline: data.item.tagline ?? '',
+      phone: data.item.phone ?? '',
+      email: data.item.email ?? '',
+      address: data.item.address ?? '',
+      facebookUrl: data.item.facebookUrl ?? '',
+      instagramUrl: data.item.instagramUrl ?? ''
     };
 
+    revision = data.meta?.revision ?? 0;
+    updatedAt = data.meta?.updatedAt ?? '';
     loading = false;
   }
 
@@ -57,27 +61,10 @@
     saved = '';
     error = '';
 
-    const currentRes = await fetch('/api/admin/content');
-    const current = await currentRes.json();
-
-    if (!currentRes.ok) {
-      saving = false;
-      error = current.error || 'Unable to load current CMS data.';
-      return;
-    }
-
-    const payload = {
-      ...current,
-      site: {
-        ...current.site,
-        ...form
-      }
-    };
-
-    const saveRes = await fetch('/api/admin/content', {
+    const saveRes = await fetch('/api/admin/site-profile', {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ item: form, baseRevision: revision })
     });
     const saveData = await saveRes.json();
 
@@ -88,6 +75,9 @@
       return;
     }
 
+    form = saveData.item;
+    revision = saveData.meta?.revision ?? revision;
+    updatedAt = saveData.meta?.updatedAt ?? updatedAt;
     saved = 'Saved';
   }
 
@@ -96,7 +86,10 @@
 
 <section class="admin-panel grid gap-4">
   <div class="flex items-center justify-between">
-    <h2 class="m-0 text-2xl text-[var(--admin-text-strong)]">Site Profile</h2>
+    <div>
+      <h2 class="m-0 text-2xl text-[var(--admin-text-strong)]">Site Profile</h2>
+      <p class="m-0 mt-1 text-xs text-[var(--admin-text-soft)]">Revision {revision}{#if updatedAt} • Updated {new Date(updatedAt).toLocaleString()}{/if}</p>
+    </div>
     {#if saved}<p class="m-0 text-sm text-emerald-600">{saved}</p>{/if}
   </div>
 
@@ -113,7 +106,12 @@
       <label class="admin-label">Instagram URL<input class="admin-input" bind:value={form.instagramUrl} /></label>
     </div>
 
-    {#if error}<p class="m-0 text-sm text-red-600">{error}</p>{/if}
+    {#if error}
+      <p class="m-0 text-sm text-red-600">{error}</p>
+      {#if error.includes('modified by another session')}
+        <button class="admin-pill-ghost w-fit" onclick={loadProfile}>Reload Latest</button>
+      {/if}
+    {/if}
 
     <div class="flex justify-end">
       <button class="admin-pill" onclick={saveProfile} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</button>

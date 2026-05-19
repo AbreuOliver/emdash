@@ -1,4 +1,8 @@
 {
+  "meta": {
+    "revision": 3,
+    "updatedAt": "2026-05-19T13:10:10.295Z"
+  },
   "site": {
     "title": "Local Restaurant",
     "tagline": "Elevated American Dining Mixed With Southern Flair",
@@ -65,7 +69,7 @@
       "seoNoIndex": false,
       "bannerEnabled": true,
       "bannerStartDate": "2026-04-22",
-      "bannerEndDate": "2026-05-07"
+      "bannerEndDate": "2026-05-20"
     },
     {
       "slug": "post-1777945681614",

@@ -1,4 +1,4 @@
-import type { CmsData, Page, Post } from '$lib/cms-schema';
+import type { BusinessHoursEntry, CmsData, Page, Post, SiteSettings } from '$lib/cms-schema';
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -59,15 +59,41 @@ export function validatePages(pages: Page[]): string | null {
 export function validateCmsPayload(payload: CmsData): string | null {
   if (!payload || typeof payload !== 'object') return 'Invalid payload.';
 
-  if (!Array.isArray(payload.site?.hours) || payload.site.hours.length < 7) {
-    return 'Hours must include at least 7 days.';
-  }
+  const siteError = validateSiteProfile(payload.site);
+  if (siteError) return siteError;
+
+  const hoursError = validateHours(payload.site.hours);
+  if (hoursError) return hoursError;
 
   const postError = validatePosts(payload.posts ?? []);
   if (postError) return postError;
 
   const pageError = validatePages(payload.pages ?? []);
   if (pageError) return pageError;
+
+  return null;
+}
+
+export function validateSiteProfile(site: SiteSettings): string | null {
+  if (!site || typeof site !== 'object') return 'Invalid site profile.';
+  if (!isNonEmptyString(site.title)) return 'Business name is required.';
+  if (!isNonEmptyString(site.tagline)) return 'Tagline is required.';
+  if (!isNonEmptyString(site.email)) return 'Email is required.';
+  return null;
+}
+
+export function validateHours(hours: BusinessHoursEntry[]): string | null {
+  if (!Array.isArray(hours) || hours.length < 7) {
+    return 'Hours must include at least 7 days.';
+  }
+
+  for (const row of hours) {
+    if (!isNonEmptyString(row.label)) return 'Each hours row needs a day label.';
+    if (row.closed) continue;
+    if (!isNonEmptyString(row.opens) || !isNonEmptyString(row.closes)) {
+      return `Open and close time are required for "${row.label}".`;
+    }
+  }
 
   return null;
 }

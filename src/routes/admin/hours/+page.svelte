@@ -4,6 +4,8 @@
   type HoursEntry = { label: string; opens: string; closes: string; closed: boolean };
 
   let rows = $state<HoursEntry[]>([]);
+  let revision = $state(0);
+  let updatedAt = $state('');
   let loading = $state(true);
   let saving = $state(false);
   let error = $state('');
@@ -13,7 +15,7 @@
     loading = true;
     error = '';
 
-    const res = await fetch('/api/admin/content');
+    const res = await fetch('/api/admin/hours');
     const data = await res.json();
 
     if (!res.ok) {
@@ -22,7 +24,9 @@
       return;
     }
 
-    rows = data.site.hours ?? [];
+    rows = data.items ?? [];
+    revision = data.meta?.revision ?? 0;
+    updatedAt = data.meta?.updatedAt ?? '';
     loading = false;
   }
 
@@ -31,27 +35,10 @@
     error = '';
     saved = '';
 
-    const currentRes = await fetch('/api/admin/content');
-    const current = await currentRes.json();
-
-    if (!currentRes.ok) {
-      saving = false;
-      error = current.error || 'Unable to load current CMS data.';
-      return;
-    }
-
-    const payload = {
-      ...current,
-      site: {
-        ...current.site,
-        hours: rows
-      }
-    };
-
-    const res = await fetch('/api/admin/content', {
+    const res = await fetch('/api/admin/hours', {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ items: rows, baseRevision: revision })
     });
     const data = await res.json();
 
@@ -62,6 +49,9 @@
       return;
     }
 
+    rows = data.items ?? rows;
+    revision = data.meta?.revision ?? revision;
+    updatedAt = data.meta?.updatedAt ?? updatedAt;
     saved = 'Saved';
   }
 
@@ -70,7 +60,10 @@
 
 <section class="admin-panel grid gap-4">
   <div class="flex items-center justify-between">
-    <h2 class="m-0 text-2xl text-[var(--admin-text-strong)]">Hours</h2>
+    <div>
+      <h2 class="m-0 text-2xl text-[var(--admin-text-strong)]">Hours</h2>
+      <p class="m-0 mt-1 text-xs text-[var(--admin-text-soft)]">Revision {revision}{#if updatedAt} • Updated {new Date(updatedAt).toLocaleString()}{/if}</p>
+    </div>
     {#if saved}<p class="m-0 text-sm text-emerald-600">{saved}</p>{/if}
   </div>
 
@@ -88,7 +81,12 @@
       {/each}
     </div>
 
-    {#if error}<p class="m-0 text-sm text-red-600">{error}</p>{/if}
+    {#if error}
+      <p class="m-0 text-sm text-red-600">{error}</p>
+      {#if error.includes('modified by another session')}
+        <button class="admin-pill-ghost w-fit" onclick={loadHours}>Reload Latest</button>
+      {/if}
+    {/if}
 
     <div class="flex justify-end">
       <button class="admin-pill" onclick={saveHours} disabled={saving}>{saving ? 'Saving...' : 'Save Hours'}</button>
